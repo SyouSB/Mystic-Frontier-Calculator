@@ -108,7 +108,6 @@
       font-size: 12px;
     }
 
-    /* 결과 섹션 비주얼 */
     .formula-visual {
       display: flex;
       justify-content: space-around;
@@ -146,10 +145,69 @@
     .status-dot.active { display: inline-block; background: var(--success); color: white; }
     .status-dot.inactive { display: inline-block; background: #475569; color: white; }
 
-    /* 조건 미충족 행 투명도 조절 */
-    .option-row.inactive-result { opacity: 0.5; filter: grayscale(0.8); }
+    .option-row.inactive-result input, .option-row.inactive-result .status-dot { opacity: 0.5; filter: grayscale(0.8); }
     .option-row.active { border-left: 4px solid var(--success); background: rgba(16, 185, 129, 0.05); }
 
+    .familiar-group .option-row {
+      display: grid;
+      grid-template-columns: auto 2.2fr 0.5fr 0.5fr 50px; 
+      gap: 8px;
+    }
+
+    #extraOptions .option-row input {
+      flex: 1;
+    }
+
+    .familiar-group .option-row input {
+      width: 100% !important;
+      padding: 10px 4px;
+      font-size: 13px;
+    }
+
+    /*
+    .clear-btn {
+      background: #475569;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .clear-btn:hover { background: var(--danger); }
+    */
+
+    .clear-btn {
+      background: var(--danger); 
+      color: white;
+      border: none;
+      border-radius: 6px; 
+      width: 28px; 
+      height: 28px;
+      cursor: pointer;
+      font-size: 16px; 
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+    }
+
+    .clear-btn:hover {
+      background: #b91c1c; 
+      transform: scale(1.05); 
+    }
+
+    .clear-btn:active {
+      transform: scale(0.95); 
+    }
   </style>
 </head>
 <body>
@@ -202,21 +260,24 @@
         <option value="If all three dice roll a 5">
         <option value="If all three dice roll a 6">
       </datalist>
-      <div id="specialOptions">
+      <div id="specialOptions" class="familiar-group">
         <div class="option-row">
-          <input class="condition" list="conditionList" placeholder="조건 선택 (선택사항)" />
+          <button type="button" class="clear-btn" onclick="clearRow(this)">×</button>
+          <input class="condition" list="conditionList" placeholder="조건 선택 (선택사항)" onfocus="this.select()"/>
           <input type="number" placeholder="+ / -" class="special-add" />
           <input type="number" step="0.1" placeholder="배율" class="special-mul" />
           <span class="status-dot"></span>
         </div>
         <div class="option-row">
-          <input class="condition" list="conditionList" placeholder="조건 선택 (선택사항)" />
+          <button type="button" class="clear-btn" onclick="clearRow(this)">×</button>
+          <input class="condition" list="conditionList" placeholder="조건 선택 (선택사항)" onfocus="this.select()"/>
           <input type="number" placeholder="+ / -" class="special-add" />
           <input type="number" step="0.1" placeholder="배율" class="special-mul" />
           <span class="status-dot"></span>
         </div>
         <div class="option-row">
-          <input class="condition" list="conditionList" placeholder="조건 선택 (선택사항)" />
+          <button type="button" class="clear-btn" onclick="clearRow(this)">×</button>
+          <input class="condition" list="conditionList" placeholder="조건 선택 (선택사항)" onfocus="this.select()"/>
           <input type="number" placeholder="+ / -" class="special-add" />
           <input type="number" step="0.1" placeholder="배율" class="special-mul" />
           <span class="status-dot"></span>
@@ -272,7 +333,7 @@
       const newLang = isKo ? 'en' : 'ko';
       document.documentElement.lang = newLang;
 
-      // 1. 번역 데이터 정의 (키 이름을 HTML ID와 일치시키거나 정확히 매칭)
+      // 1. 번역 데이터
       const trans = {
         title: newLang === 'ko' ? '🎲 미스틱 프론티어 계산기' : '🎲 Mystic Frontier Calculator',
         langBtn: newLang === 'ko' ? 'EN' : 'KO',
@@ -295,7 +356,7 @@
         ph_mul: newLang === 'ko' ? '배율' : 'Multiplier'
       };
 
-      // 2. 텍스트 요소 변경 (존재하는 ID만 변경)
+      // 2. 텍스트 변경 
       document.getElementById('title').innerText = trans.title;
       document.getElementById('langBtn').innerText = trans.langBtn;
       document.getElementById('h-diffculty').innerText = trans.h_diffculty;
@@ -310,7 +371,7 @@
       document.getElementById('lbl-formula-base').innerText = trans.lbl_f_base;
       document.getElementById('lbl-formula-mul').innerText = trans.lbl_f_mul;
 
-      // 3. Placeholder 일괄 변경 (이 부분이 핵심입니다)
+      // 3. Placeholder 변경 
       document.getElementById('diffcultyDice').placeholder = trans.ph_diff;
       
       document.querySelectorAll('.condition').forEach(el => {
@@ -328,26 +389,6 @@
       // 4. 결과창 갱신
       if(document.getElementById('resultSection').style.display !== 'none') calculate();
     }
-    
-    /*
-      const text = isKo ? {
-        title: '🎲 Mystic Frontier Calculator',
-        diffculty: 'Diffculty',
-        mydice: 'My Dice',
-        special: 'Familiar Options',
-        extra: 'Item Options',
-        calc: 'Check Result',
-        draw: 'DRAW', win: 'WIN', lose: 'LOSE'
-      } : {
-        title: '🎲 미스틱 프론티어 계산기',
-        diffculty: '난이도',
-        mydice: '내 주사위',
-        special: '퍼밀 옵션',
-        extra: '아이템 옵션',
-        calc: '결과 확인하기',
-        draw: '무승부', win: '승리', lose: '패배'
-      };
-    */
 
     function calculate(shouldScroll = false) {
       document.getElementById('resultSection').style.display = 'block';
@@ -424,7 +465,7 @@
         } else {
           row.classList.add('inactive-result');
           row.classList.remove('active');
-          st.innerText = currentLang === 'ko' ? '미충족' : 'Not Applied';
+          st.innerText = currentLang === 'ko' ? '미적용' : 'Not Applied';
           st.className = 'status-dot inactive';
         }
       });
@@ -439,7 +480,6 @@
       document.getElementById('fAdd').innerText = addSum;
       document.getElementById('fBase').innerText = baseSum;
       document.getElementById('fMul').innerText = multiplier.toFixed(1);
-      // document.getElementById('alwaysNote').style.display = hasAlwaysOn ? 'block' : 'none';
 
       const wlBadge = document.getElementById('winlose');
       if (finalValue > diffculty) {
@@ -463,6 +503,20 @@
         }, 50);
       }
     }
+
+  // 초기화 버튼
+  function clearRow(btn) {
+    const row = btn.parentElement;
+    
+    row.querySelectorAll('input').forEach(input => {
+      input.value = '';
+    });
+    
+    const st = row.querySelector('.status-dot');
+    st.innerText = '';
+    st.className = 'status-dot';
+    row.classList.remove('active', 'inactive-result');
+  }
   </script>
 </body>
 </html>
