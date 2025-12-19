@@ -253,7 +253,6 @@
         <option value="If the first die rolls an even number">
         <option value="If the second die rolls an even number">
         <option value="If the third die rolls an even number">
-        <option value="If the three dice roll consecutive numbers">
         <option value="If the first and second dice add up to 2 or more">
         <option value="If the first and second dice add up to 4 or more">
         <option value="If the first and second dice add up to 6 or more">
@@ -263,6 +262,9 @@
         <option value="If the second and third dice add up to 2 or more">
         <option value="If the second and third dice add up to 4 or more">
         <option value="If the second and third dice add up to 6 or more">
+        <option value="If all three dice add up to 2 or more">
+        <option value="If all three dice add up to 3 or more">
+        <option value="If all three dice add up to 5 or more">                    
         <option value="If the first and second dice match">
         <option value="If the first and third dice match">
         <option value="If the second and third dice match">
@@ -272,6 +274,7 @@
         <option value="If all three dice roll a 4">
         <option value="If all three dice roll a 5">
         <option value="If all three dice roll a 6">
+        <option value="If the three dice roll consecutive numbers">
       </datalist>
       <div id="specialOptions" class="familiar-group">
         <div class="option-row">
@@ -451,6 +454,10 @@
             if (c === 'If the second and third dice add up to 4 or more' && d2 >= 4 && d3 >= 4) conditionMet = true;
             if (c === 'If the second and third dice add up to 6 or more' && d2 >= 6 && d3 >= 6) conditionMet = true;
 
+            if (c === 'If all three dice add up to 2 or more' && d1 >= 2 && d2 >= 2 && d3 >= 2) conditionMet = true;
+            if (c === 'If all three dice add up to 3 or more' && d1 >= 3 && d2 >= 3 && d3 >= 3) conditionMet = true;
+            if (c === 'If all three dice add up to 5 or more' && d1 >= 5 && d2 >= 5 && d3 >= 5) conditionMet = true;
+            
             // match
             if (c === 'If the first and second dice match' && d1 === d2) conditionMet = true;
             if (c === 'If the first and third dice match' && d1 === d3) conditionMet = true;
