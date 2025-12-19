@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="keywords" content="미스틱 프론티어, Mystic Frontier">
+  
+  <title>미스틱 프론티어 계산기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --accent-primary: #3b82f6;
+      --accent-secondary: #facc15;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+
+    body { 
+      font-family: 'Pretendard', -apple-system, sans-serif; 
+      background: var(--bg-color); 
+      color: var(--text-main);
+      margin: 0; 
+      padding: 20px; 
+      line-height: 1.6;
+    }
+
+    .container { 
+      max-width: 700px; 
+      margin: auto; 
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 0 10px;
+    }
+
+    h1 { font-size: 22px; margin: 0; color: var(--accent-secondary); text-shadow: 0 0 10px rgba(250, 204, 21, 0.3); }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    h2 { font-size: 16px; color: var(--text-muted); margin-top: 0; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    h2::before { content: ''; display: inline-block; width: 4px; height: 16px; background: var(--accent-primary); border-radius: 2px; }
+
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    
+    input { 
+      background: #334155;
+      border: 1px solid #475569;
+      color: white;
+      padding: 12px; 
+      border-radius: 8px; 
+      width: 100%; 
+      box-sizing: border-box;
+      transition: all 0.2s;
+      font-size: 16px;
+    }
+    input:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+    input::placeholder { color: #64748b; font-size: 14px; }
+
+    .option-row { 
+      display: flex; 
+      gap: 8px; 
+      margin-bottom: 10px; 
+      align-items: center;
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.5);
+    }
+    .option-row input.condition { flex: 2; }
+    .option-row input { flex: 1; }
+
+    button.calc-btn { 
+      width: 100%;
+      padding: 16px; 
+      border: none; 
+      border-radius: 12px; 
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff; 
+      font-size: 18px; 
+      font-weight: bold;
+      cursor: pointer; 
+      transition: transform 0.1s, box-shadow 0.2s;
+      margin: 20px 0;
+    }
+    button.calc-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4); }
+    button.calc-btn:active { transform: translateY(0); }
+
+    .lang-btn {
+      background: transparent;
+      border: 1px solid var(--text-muted);
+      color: var(--text-muted);
+      padding: 4px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    /* 결과 섹션 비주얼 */
+    .formula-visual {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 25px;
+      background: #0f172a;
+      border-radius: 14px;
+      margin-top: 10px;
+      border: 1px dashed #334155;
+    }
+    .formula-box { text-align: center; }
+    .formula-label { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
+    .formula-val { font-size: 24px; font-weight: 800; color: var(--accent-secondary); }
+    .operator { font-size: 20px; color: var(--text-muted); font-weight: 300; }
+
+    .final-card {
+      text-align: center;
+      padding: 30px;
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+    }
+    .result-score { font-size: 48px; font-weight: 900; margin: 10px 0; color: white; }
+    .winlose-badge {
+      display: inline-block;
+      padding: 8px 24px;
+      border-radius: 50px;
+      font-weight: bold;
+      font-size: 20px;
+      margin-top: 10px;
+    }
+    .win { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
+    .lose { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+    .draw { background: rgba(148, 163, 184, 0.2); color: var(--text-muted); border: 1px solid var(--text-muted); }
+
+    .status-dot { font-size: 11px; padding: 2px 8px; border-radius: 4px; display: none; }
+    .status-dot.active { display: inline-block; background: var(--success); color: white; }
+    .status-dot.inactive { display: inline-block; background: #475569; color: white; }
+
+    /* 조건 미충족 행 투명도 조절 */
+    .option-row.inactive-result { opacity: 0.5; filter: grayscale(0.8); }
+    .option-row.active { border-left: 4px solid var(--success); background: rgba(16, 185, 129, 0.05); }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 id="title">🎲 미스틱 프론티어 계산기</h1>
+      <button onclick="toggleLang()" id="langBtn" class="lang-btn">EN</button>
+    </header>
+
+    <div class="card">
+      <h2 id="h-diffculty">난이도</h2>
+      <input type="number" id="diffcultyDice" placeholder="난이도 값" />
+    </div>
+
+    <div class="card">
+      <h2 id="h-mydice">내 주사위 결과 (1~6)</h2>
+      <div class="grid">
+        <input type="number" min="1" max="6" id="dice1" placeholder="D1" />
+        <input type="number" min="1" max="6" id="dice2" placeholder="D2" />
+        <input type="number" min="1" max="6" id="dice3" placeholder="D3" />
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 id="h-familiar">퍼밀 옵션 <span style="font-size:11px; font-weight:normal; margin-left:10px;">(조건 미입력 시 상시적용)</span></h2>
+      <datalist id="conditionList">
+        <option value="If the first die rolls an odd number">
+        <option value="If the second die rolls an odd number">
+        <option value="If the third die rolls an odd number">
+        <option value="If the first die rolls an even number">
+        <option value="If the second die rolls an even number">
+        <option value="If the third die rolls an even number">
+        <option value="If the three dice roll consecutive numbers">
+        <option value="If the first and second dice add up to 2 or more">
+        <option value="If the first and second dice add up to 4 or more">
+        <option value="If the first and second dice add up to 6 or more">
+        <option value="If the first and third dice add up to 2 or more">
+        <option value="If the first and third dice add up to 4 or more">
+        <option value="If the first and third dice add up to 6 or more">
+        <option value="If the second and third dice add up to 2 or more">
+        <option value="If the second and third dice add up to 4 or more">
+        <option value="If the second and third dice add up to 6 or more">
+        <option value="If the first and second dice match">
+        <option value="If the first and third dice match">
+        <option value="If the second and third dice match">
+        <option value="If all three dice roll a 1">
+        <option value="If all three dice roll a 2">
+        <option value="If all three dice roll a 3">
+        <option value="If all three dice roll a 4">
+        <option value="If all three dice roll a 5">
+        <option value="If all three dice roll a 6">
+      </datalist>
+      <div id="specialOptions">
+        <div class="option-row">
+          <input class="condition" list="conditionList" placeholder="조건 선택 (선택사항)" />
+          <input type="number" placeholder="+ / -" class="special-add" />
+          <input type="number" step="0.1" placeholder="배율" class="special-mul" />
+          <span class="status-dot"></span>
+        </div>
+        <div class="option-row">
+          <input class="condition" list="conditionList" placeholder="조건 선택 (선택사항)" />
+          <input type="number" placeholder="+ / -" class="special-add" />
+          <input type="number" step="0.1" placeholder="배율" class="special-mul" />
+          <span class="status-dot"></span>
+        </div>
+        <div class="option-row">
+          <input class="condition" list="conditionList" placeholder="조건 선택 (선택사항)" />
+          <input type="number" placeholder="+ / -" class="special-add" />
+          <input type="number" step="0.1" placeholder="배율" class="special-mul" />
+          <span class="status-dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 id="h-item">아이템 옵션</h2>
+      <div id="extraOptions">
+        <div class="option-row"><input type="number" placeholder="+ / -" class="extra-add" /><input type="number" step="0.1" placeholder="배율" class="extra-mul" /></div>
+        <div class="option-row"><input type="number" placeholder="+ / -" class="extra-add" /><input type="number" step="0.1" placeholder="배율" class="extra-mul" /></div>
+        <div class="option-row"><input type="number" placeholder="+ / -" class="extra-add" /><input type="number" step="0.1" placeholder="배율" class="extra-mul" /></div>
+        <div class="option-row"><input type="number" placeholder="+ / -" class="extra-add" /><input type="number" step="0.1" placeholder="배율" class="extra-mul" /></div>
+        <div class="option-row"><input type="number" placeholder="+ / -" class="extra-add" /><input type="number" step="0.1" placeholder="배율" class="extra-mul" /></div>
+      </div>
+    </div>
+
+    <button class="calc-btn" id="calcBtn" onclick="calculate()">결과 확인하기</button>
+
+    <div id="resultSection" style="display:none; margin-bottom: 50px;">
+      <div class="card">
+        <h2 id="h-formula">상세 계산식</h2>
+          <div class="formula-visual">
+            <div class="formula-box">
+              <div class="formula-label" id="lbl-formula-add">+ / -</div>
+              <div class="formula-val" id="fAdd">0</div>
+            </div>
+            <div class="operator">+</div>
+            <div class="formula-box">
+              <div class="formula-label" id="lbl-formula-base">주사위 합</div>
+              <div class="formula-val" id="fBase">0</div>
+            </div>
+            <div class="operator">×</div>
+            <div class="formula-box">
+              <div class="formula-label" id="lbl-formula-mul">배율</div>
+              <div class="formula-val" id="fMul">1</div>
+            </div>
+          </div>
+        </div>
+      <div class="card final-card">
+        <h2 id="h-result" style="justify-content: center;">결과</h2>
+        <div class="result-score" id="result">0</div>
+        <div id="winlose" class="winlose-badge">무승부</div>
+        <p id="alwaysNote" style="font-size:12px; color:var(--text-muted); margin-top:15px; display:none;"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleLang() {
+      const isKo = document.documentElement.lang === 'ko';
+      const newLang = isKo ? 'en' : 'ko';
+      document.documentElement.lang = newLang;
+
+      // 1. 번역 데이터 정의 (키 이름을 HTML ID와 일치시키거나 정확히 매칭)
+      const trans = {
+        title: newLang === 'ko' ? '🎲 미스틱 프론티어 계산기' : '🎲 Mystic Frontier Calculator',
+        langBtn: newLang === 'ko' ? 'EN' : 'KO',
+        h_diffculty: newLang === 'ko' ? '난이도' : 'Difficulty',
+        h_mydice: newLang === 'ko' ? '내 주사위 결과 (1~6)' : 'My Dice Results (1~6)',
+        h_familiar: newLang === 'ko' ? '퍼밀 옵션 (조건 미입력 시 상시적용)' : 'Familiar Options (Always applied if empty)',
+        h_item: newLang === 'ko' ? '아이템 옵션' : 'Item Options',
+        h_formula: newLang === 'ko' ? '상세 계산식' : 'Calculation Detail',
+        h_result: newLang === 'ko' ? '결과' : 'Result',
+        h_formula: newLang === 'ko' ? '상세 계산식' : 'Calculation Detail',
+        lbl_f_add: '+ / -', // 기호는 공통
+        lbl_f_base: newLang === 'ko' ? '주사위 합' : 'Dice Sum',
+        lbl_f_mul: newLang === 'ko' ? '배율' : 'Multiplier',
+        calcBtn: newLang === 'ko' ? '결과 확인하기' : 'Calculate',
+        
+        // Placeholder 데이터
+        ph_diff: newLang === 'ko' ? '난이도 값' : 'Difficulty Value',
+        ph_cond: newLang === 'ko' ? '조건 선택 (선택사항)' : 'Select condition (Optional)',
+        ph_add: '+ / -',
+        ph_mul: newLang === 'ko' ? '배율' : 'Multiplier'
+      };
+
+      // 2. 텍스트 요소 변경 (존재하는 ID만 변경)
+      document.getElementById('title').innerText = trans.title;
+      document.getElementById('langBtn').innerText = trans.langBtn;
+      document.getElementById('h-diffculty').innerText = trans.h_diffculty;
+      document.getElementById('h-mydice').innerText = trans.h_mydice;
+      document.getElementById('h-familiar').innerText = trans.h_familiar;
+      document.getElementById('h-item').innerText = trans.h_item;
+      document.getElementById('h-formula').innerText = trans.h_formula;
+      document.getElementById('h-result').innerText = trans.h_result;
+      document.getElementById('calcBtn').innerText = trans.calcBtn;
+      document.getElementById('h-formula').innerText = trans.h_formula;
+      document.getElementById('lbl-formula-add').innerText = trans.lbl_f_add;
+      document.getElementById('lbl-formula-base').innerText = trans.lbl_f_base;
+      document.getElementById('lbl-formula-mul').innerText = trans.lbl_f_mul;
+
+      // 3. Placeholder 일괄 변경 (이 부분이 핵심입니다)
+      document.getElementById('diffcultyDice').placeholder = trans.ph_diff;
+      
+      document.querySelectorAll('.condition').forEach(el => {
+        el.placeholder = trans.ph_cond;
+      });
+      
+      document.querySelectorAll('.special-add, .extra-add').forEach(el => {
+        el.placeholder = trans.ph_add;
+      });
+      
+      document.querySelectorAll('.special-mul, .extra-mul').forEach(el => {
+        el.placeholder = trans.ph_mul;
+      });
+      
+      // 4. 결과창 갱신
+      if(document.getElementById('resultSection').style.display !== 'none') calculate();
+    }
+    
+    /*
+      const text = isKo ? {
+        title: '🎲 Mystic Frontier Calculator',
+        diffculty: 'Diffculty',
+        mydice: 'My Dice',
+        special: 'Familiar Options',
+        extra: 'Item Options',
+        calc: 'Check Result',
+        draw: 'DRAW', win: 'WIN', lose: 'LOSE'
+      } : {
+        title: '🎲 미스틱 프론티어 계산기',
+        diffculty: '난이도',
+        mydice: '내 주사위',
+        special: '퍼밀 옵션',
+        extra: '아이템 옵션',
+        calc: '결과 확인하기',
+        draw: '무승부', win: '승리', lose: '패배'
+      };
+    */
+
+    function calculate(shouldScroll = false) {
+      document.getElementById('resultSection').style.display = 'block';
+
+      const d1 = Number(document.getElementById('dice1').value) || 0;
+      const d2 = Number(document.getElementById('dice2').value) || 0;
+      const d3 = Number(document.getElementById('dice3').value) || 0;
+      const diffculty = Number(document.getElementById('diffcultyDice').value) || 0;
+
+      let baseSum = d1 + d2 + d3;
+      let addSum = 0;
+      let mulSum = 0;
+      let hasAlwaysOn = false;
+
+      document.querySelectorAll('#specialOptions .option-row').forEach(row => {
+        const c = row.querySelector('.condition').value.trim();
+        let conditionMet = false;
+
+        if (c === '') { if(row.querySelector('.special-add').value || row.querySelector('.special-mul').value) { conditionMet = true; hasAlwaysOn = true; } }
+        else {
+            // 스트레이트
+            if (c === 'If the three dice roll consecutive numbers') {
+                const arr = [d1,d2,d3].sort((a,b)=>a-b);
+                conditionMet = (arr[0]!==0) && (arr[1] === arr[0] + 1 && arr[2] === arr[1] + 1);
+            }
+
+            // 홀수
+            if (c === 'If the first die rolls an odd number' && d1 % 2 === 1) conditionMet = true;
+            if (c === 'If the second die rolls an odd number' && d2 % 2 === 1) conditionMet = true;
+            if (c === 'If the third die rolls an odd number' && d3 % 2 === 1) conditionMet = true;
+
+            // 짝수
+            if (c === 'If the first die rolls an even number' && d1 % 2 === 0 && d1 !== 0) conditionMet = true;
+            if (c === 'If the second die rolls an even number' && d2 % 2 === 0 && d2 !== 0) conditionMet = true;
+            if (c === 'If the third die rolls an even number' && d3 % 2 === 0 && d3 !== 0) conditionMet = true;
+
+            // add up
+            if (c === 'If the first and second dice add up to 2 or more' && d1 >= 2 && d2 >= 2) conditionMet = true;
+            if (c === 'If the first and second dice add up to 4 or more' && d1 >= 4 && d2 >= 4) conditionMet = true;
+            if (c === 'If the first and second dice add up to 6 or more' && d1 >= 6 && d2 >= 6) conditionMet = true;
+
+            if (c === 'If the first and third dice add up to 2 or more' && d1 >= 2 && d3 >= 2) conditionMet = true;
+            if (c === 'If the first and third dice add up to 4 or more' && d1 >= 4 && d3 >= 4) conditionMet = true;
+            if (c === 'If the first and third dice add up to 6 or more' && d1 >= 6 && d3 >= 6) conditionMet = true;
+
+            if (c === 'If the second and third dice add up to 2 or more' && d2 >= 2 && d3 >= 2) conditionMet = true;
+            if (c === 'If the second and third dice add up to 4 or more' && d2 >= 4 && d3 >= 4) conditionMet = true;
+            if (c === 'If the second and third dice add up to 6 or more' && d2 >= 6 && d3 >= 6) conditionMet = true;
+
+            // match
+            if (c === 'If the first and second dice match' && d1 === d2) conditionMet = true;
+            if (c === 'If the first and third dice match' && d1 === d3) conditionMet = true;
+            if (c === 'If the second and third dice match' && d2 === d3) conditionMet = true;
+
+            // Yacht
+            if (c === 'If all three dice roll a 1' && d1 === 1 && d2 === 1 && d3 === 1) conditionMet = true;
+            if (c === 'If all three dice roll a 2' && d1 === 2 && d2 === 2 && d3 === 2) conditionMet = true;
+            if (c === 'If all three dice roll a 3' && d1 === 3 && d2 === 3 && d3 === 3) conditionMet = true;
+            if (c === 'If all three dice roll a 4' && d1 === 4 && d2 === 4 && d3 === 4) conditionMet = true;
+            if (c === 'If all three dice roll a 5' && d1 === 5 && d2 === 5 && d3 === 5) conditionMet = true;
+            if (c === 'If all three dice roll a 6' && d1 === 6 && d2 === 6 && d3 === 6) conditionMet = true;
+        }
+
+        const st = row.querySelector('.status-dot');
+        const currentLang = document.documentElement.lang;
+
+        if (conditionMet) {
+          row.classList.add('active');
+          row.classList.remove('inactive-result');
+          st.innerText = currentLang === 'ko' ? '적용됨' : 'Applied';
+          st.className = 'status-dot active';
+          addSum += Number(row.querySelector('.special-add').value) || 0;
+          mulSum += Number(row.querySelector('.special-mul').value) || 0;
+        } else {
+          row.classList.add('inactive-result');
+          row.classList.remove('active');
+          st.innerText = currentLang === 'ko' ? '미충족' : 'Not Applied';
+          st.className = 'status-dot inactive';
+        }
+      });
+
+      document.querySelectorAll('.extra-add').forEach(i => addSum += Number(i.value) || 0);
+      document.querySelectorAll('.extra-mul').forEach(i => mulSum += Number(i.value) || 0);
+
+      const multiplier = mulSum > 0 ? mulSum : 1;
+      const finalValue = (addSum + baseSum) * multiplier;
+      
+      document.getElementById('result').innerText = Math.floor(finalValue);
+      document.getElementById('fAdd').innerText = addSum;
+      document.getElementById('fBase').innerText = baseSum;
+      document.getElementById('fMul').innerText = multiplier.toFixed(1);
+      // document.getElementById('alwaysNote').style.display = hasAlwaysOn ? 'block' : 'none';
+
+      const wlBadge = document.getElementById('winlose');
+      if (finalValue > diffculty) {
+        wlBadge.innerText = document.documentElement.lang === 'ko' ? '승리' : 'WIN';
+        wlBadge.className = 'winlose-badge win';
+      } else if (finalValue < diffculty) {
+        wlBadge.innerText = document.documentElement.lang === 'ko' ? '패배' : 'LOSE';
+        wlBadge.className = 'winlose-badge lose';
+      } else {
+        wlBadge.innerText = document.documentElement.lang === 'ko' ? '무승부' : 'DRAW';
+        wlBadge.className = 'winlose-badge draw';
+      }
+
+      // 결과창으로 스크롤
+      if (shouldScroll) {
+          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }
+    }
+  </script>
+</body>
+</html>
