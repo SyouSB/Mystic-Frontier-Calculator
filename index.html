@@ -455,7 +455,12 @@
 
       // 결과창으로 스크롤
       if (shouldScroll) {
-          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        setTimeout(() => {
+          resultSection.scrollIntoView({ 
+            behavior: 'smooth', 
+          block: 'start' 
+          });
+        }, 50);
       }
     }
   </script>
