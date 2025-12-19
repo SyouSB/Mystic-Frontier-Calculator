@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="keywords" content="미스틱 프론티어, Mystic Frontier">
-  
+
   <title>미스틱 프론티어 계산기</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
@@ -272,7 +272,7 @@
       const newLang = isKo ? 'en' : 'ko';
       document.documentElement.lang = newLang;
 
-      // 1. 번역 
+      // 1. 번역 데이터 정의 (키 이름을 HTML ID와 일치시키거나 정확히 매칭)
       const trans = {
         title: newLang === 'ko' ? '🎲 미스틱 프론티어 계산기' : '🎲 Mystic Frontier Calculator',
         langBtn: newLang === 'ko' ? 'EN' : 'KO',
@@ -288,14 +288,14 @@
         lbl_f_mul: newLang === 'ko' ? '배율' : 'Multiplier',
         calcBtn: newLang === 'ko' ? '결과 확인하기' : 'Calculate',
         
-        // Placeholder
+        // Placeholder 데이터
         ph_diff: newLang === 'ko' ? '난이도 값' : 'Difficulty Value',
         ph_cond: newLang === 'ko' ? '조건 선택 (선택사항)' : 'Select condition (Optional)',
         ph_add: '+ / -',
         ph_mul: newLang === 'ko' ? '배율' : 'Multiplier'
       };
 
-      // 2. 텍스트 수정
+      // 2. 텍스트 요소 변경 (존재하는 ID만 변경)
       document.getElementById('title').innerText = trans.title;
       document.getElementById('langBtn').innerText = trans.langBtn;
       document.getElementById('h-diffculty').innerText = trans.h_diffculty;
@@ -310,7 +310,7 @@
       document.getElementById('lbl-formula-base').innerText = trans.lbl_f_base;
       document.getElementById('lbl-formula-mul').innerText = trans.lbl_f_mul;
 
-      // 3. Placeholder 변경
+      // 3. Placeholder 일괄 변경 (이 부분이 핵심입니다)
       document.getElementById('diffcultyDice').placeholder = trans.ph_diff;
       
       document.querySelectorAll('.condition').forEach(el => {
@@ -461,4 +461,3 @@
   </script>
 </body>
 </html>
-
