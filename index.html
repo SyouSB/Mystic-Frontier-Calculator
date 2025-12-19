@@ -208,12 +208,25 @@
     .clear-btn:active {
       transform: scale(0.95); 
     }
+
+    .preset-btn.active {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
       <h1 id="title">🎲 미스틱 프론티어 계산기</h1>
+        <div id="presetGroup" style="display: flex; gap: 4px; margin-right: 10px;">
+          <button onclick="changePreset(1)" class="lang-btn preset-btn" data-idx="1">Preset1</button>
+          <button onclick="changePreset(2)" class="lang-btn preset-btn" data-idx="2">Preset2</button>
+          <button onclick="changePreset(3)" class="lang-btn preset-btn" data-idx="3">Preset3</button>
+        </div>      
+      <button onclick="resetCurrentPreset()" class="lang-btn" style="border-color: var(--danger); color: var(--danger); margin-right: 10px;">Reset</button>
       <button onclick="toggleLang()" id="langBtn" class="lang-btn">EN</button>
     </header>
 
@@ -517,6 +530,116 @@
     st.className = 'status-dot';
     row.classList.remove('active', 'inactive-result');
   }
+
+  let currentPreset = 1;
+
+  // 프리셋 변경
+  function changePreset(idx) {
+    currentPreset = idx;
+    
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.dataset.idx) === idx);
+    });
+
+    loadData();
+  }
+
+  // 데이터 저장 
+  function saveData() {
+    const data = {
+      difficulty: document.getElementById('diffcultyDice').value,
+      dice: [
+        document.getElementById('dice1').value,
+        document.getElementById('dice2').value,
+        document.getElementById('dice3').value
+      ],
+      specialOptions: Array.from(document.querySelectorAll('#specialOptions .option-row')).map(row => ({
+        condition: row.querySelector('.condition').value,
+        add: row.querySelector('.special-add').value,
+        mul: row.querySelector('.special-mul').value
+      })),
+      extraOptions: Array.from(document.querySelectorAll('#extraOptions .option-row')).map(row => ({
+        add: row.querySelector('.extra-add').value,
+        mul: row.querySelector('.extra-mul').value
+      })),
+      lang: document.documentElement.lang
+    };
+    
+    localStorage.setItem(`mysticFrontierData_${currentPreset}`, JSON.stringify(data));
+    localStorage.setItem('mysticFrontier_LastPreset', currentPreset); // 마지막 사용 프리셋 기억
+  }
+
+  // 데이터 불러오기
+  function loadData() {
+    const saved = localStorage.getItem(`mysticFrontierData_${currentPreset}`);
+    
+    if (!saved) {
+      resetAllInputs();
+      return;
+    }
+
+    const data = JSON.parse(saved);
+
+    document.getElementById('diffcultyDice').value = data.difficulty || '';
+    document.getElementById('dice1').value = data.dice[0] || '';
+    document.getElementById('dice2').value = data.dice[1] || '';
+    document.getElementById('dice3').value = data.dice[2] || '';
+
+    const specialRows = document.querySelectorAll('#specialOptions .option-row');
+    data.specialOptions.forEach((opt, i) => {
+      if (specialRows[i]) {
+        specialRows[i].querySelector('.condition').value = opt.condition || '';
+        specialRows[i].querySelector('.special-add').value = opt.add || '';
+        specialRows[i].querySelector('.special-mul').value = opt.mul || '';
+      }
+    });
+
+    const extraRows = document.querySelectorAll('#extraOptions .option-row');
+    data.extraOptions.forEach((opt, i) => {
+      if (extraRows[i]) {
+        extraRows[i].querySelector('.extra-add').value = opt.add || '';
+        extraRows[i].querySelector('.extra-mul').value = opt.mul || '';
+      }
+    });
+
+    calculate();
+  }
+
+  // 프리셋 초기화
+  function resetCurrentPreset() {
+    const currentLang = document.documentElement.lang;
+    const msg = currentLang === 'ko' 
+      ? `현재 프리셋(P${currentPreset})의 모든 데이터를 초기화할까요?` 
+      : `Reset all data for Preset ${currentPreset}?`;
+
+    if (confirm(msg)) {
+      localStorage.removeItem(`mysticFrontierData_${currentPreset}`);
+      resetAllInputs();
+      loadData(true);
+      document.getElementById('resultSection').style.display = 'none';
+    }
+  }
+
+  // 입력창 초기화
+  function resetAllInputs() {
+    document.querySelectorAll('input').forEach(input => input.value = '');
+    document.querySelectorAll('.status-dot').forEach(dot => {
+      dot.innerText = '';
+      dot.className = 'status-dot';
+    });
+    document.querySelectorAll('.option-row').forEach(row => row.classList.remove('active', 'inactive-result'));
+    document.getElementById('resultSection').style.display = 'none';
+  }
+
+  // 초기 로드
+  window.addEventListener('load', () => {
+    const lastPreset = localStorage.getItem('mysticFrontier_LastPreset');
+    changePreset(lastPreset ? parseInt(lastPreset) : 1);
+
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', saveData);
+    });
+  });
   </script>
 </body>
 </html>
