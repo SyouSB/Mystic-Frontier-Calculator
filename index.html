@@ -245,7 +245,12 @@
     </div>
 
     <div class="card">
-      <h2 id="h-familiar">퍼밀 옵션 <span style="font-size:11px; font-weight:normal; margin-left:10px;">(조건 미입력 시 상시적용)</span></h2>
+      <h2 style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <div>
+            <span id="h-familiar">퍼밀 옵션 (조건 미입력 시 상시적용)</span>
+          </div>
+          <button type="button" class="clear-btn" onclick="resetSection('specialOptions')" style="margin-left: auto; width: auto; padding: 0 10px; font-size: 12px;">Reset</button>
+        </h2>      
       <datalist id="conditionList">
         <option value="If the first die rolls an odd number">
         <option value="If the second die rolls an odd number">
@@ -302,7 +307,11 @@
     </div>
 
     <div class="card">
-      <h2 id="h-item">아이템 옵션</h2>
+      <h2 style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <span id="h-item">아이템 옵션</span>
+        <button type="button" class="clear-btn" onclick="resetSection('extraOptions')" style="margin-left: auto; width: auto; padding: 0 10px; font-size: 12px;">Reset</button>
+      </h2>
+      
       <div id="extraOptions">
         <div class="option-row"><input type="number" placeholder="+ / -" class="extra-add" /><input type="number" step="0.1" placeholder="배율" class="extra-mul" /></div>
         <div class="option-row"><input type="number" placeholder="+ / -" class="extra-add" /><input type="number" step="0.1" placeholder="배율" class="extra-mul" /></div>
@@ -647,6 +656,38 @@
       input.addEventListener('input', saveData);
     });
   });
+
+  // 섹션별 초기화
+  function resetSection(sectionId) {
+    const currentLang = document.documentElement.lang;
+    const sectionName = sectionId === 'specialOptions' 
+      ? (currentLang === 'ko' ? "퍼밀 옵션" : "Familiar Options")
+      : (currentLang === 'ko' ? "아이템 옵션" : "Item Options");
+
+    const msg = currentLang === 'ko' 
+      ? `${sectionName}의 모든 내용을 삭제할까요?` 
+      : `Clear all ${sectionName}?`;
+
+    if (confirm(msg)) {
+      const container = document.getElementById(sectionId);
+      
+      container.querySelectorAll('input').forEach(input => input.value = '');
+      
+      if (sectionId === 'specialOptions') {
+        container.querySelectorAll('.status-dot').forEach(dot => {
+          dot.innerText = '';
+          dot.className = 'status-dot';
+        });
+        container.querySelectorAll('.option-row').forEach(row => {
+          row.classList.remove('active', 'inactive-result');
+        });
+      }
+
+      saveData();
+      if (document.getElementById('resultSection').style.display !== 'none') calculate();
+    }
+  } 
   </script>
 </body>
 </html>
+
